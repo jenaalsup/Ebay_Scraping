@@ -19,6 +19,7 @@ def parse(brand):
     page_num = 1
     scraped_products = []
     total_value = 0
+    total_count = 0
 
     while True:
         #url = 'https://www.ebay.com/sch/i.html?_nkw="{0}"&_sacat=0&_dmd=1&_sop=1'.format(brand)
@@ -46,18 +47,22 @@ def parse(brand):
         #product_listings = parser.xpath('//li[contains(@id,"results-listing")]')
         product_listings = parser.xpath('//li[contains(@class, "s-item    ")]')
         raw_result_count = parser.xpath("//h1[contains(@class,'count-heading')]//text()")
-        print(">>", raw_result_count)
-        result_count = ''.join(raw_result_count).strip()
+        #result_count = ''.join(raw_result_count).strip()
+        result_count = raw_result_count[0]
         print ("Found {0} for {1}".format(result_count,brand))
  
         count = 0
         for product in product_listings:
-            count = count + 1
             raw_url = product.xpath('.//a[contains(@class,"item__link")]/@href')
             raw_title = product.xpath('.//h3[contains(@class,"item__title")]//text()')
             raw_product_type = product.xpath('.//h3[contains(@class,"item__title")]/span[@class="LIGHT_HIGHLIGHT"]/text()')
             raw_price = product.xpath('.//span[contains(@class,"s-item__price")]//text()')
+            sponsored = product.xpath('.//span[contains(@role,"text")]//text()')
 
+            if (len(sponsored) > 0): # don't count sponsored products
+                continue
+
+            count = count + 1
             price  = ' '.join(' '.join(raw_price).split())
             parsed_price = Price.fromstring(price)
             total_value = total_value + parsed_price.amount_float
@@ -70,15 +75,21 @@ def parse(brand):
                         'price':price
             }
             scraped_products.append(data)
-        print("page item count per count: ", count)
 
         if scraped_products:
-            stats = "STATS PAGE Num %d --> Brand: %s, Total Items: %d, Total Value: $%0.2f "%(page_num, brand, len(scraped_products), total_value)
-            print(stats)
-        if count < 200:
-            print("-------> DONE!")
-            break
-        page_num = page_num + 1
+            total_count = total_count + count
+            if count < 200:
+                stats = "  STATS for Brand: %s, Items Scanned: %d, Total Items: %d Value: $%0.2f "%( brand, 
+                total_count, int(result_count), total_value)   
+                print(stats)
+    
+                stats = "  >> $%0.2f"%((total_value / total_count) * int(result_count) )
+                print( stats )
+
+                print("-------> DONE!")
+                break
+            page_num = page_num + 1
+    
     return scraped_products
 
 
