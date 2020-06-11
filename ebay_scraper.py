@@ -1,9 +1,9 @@
 import argparse
-from pprint import pprint
-from traceback import format_exc
+#from pprint import pprint
+#from traceback import format_exc
 
 import requests
-import unicodecsv as csv
+# import unicodecsv as csv
 from lxml import html
 
 from price_parser import Price
@@ -17,7 +17,7 @@ def parse(brand):
     global stats
  
     page_num = 1
-    scaped_products = []
+    scraped_products = []
     total_value = 0
 
     while True:
@@ -50,7 +50,7 @@ def parse(brand):
         result_count = ''.join(raw_result_count).strip()
         print ("Found {0} for {1}".format(result_count,brand))
  
-        count = 0;
+        count = 0
         for product in product_listings:
             count = count + 1
             raw_url = product.xpath('.//a[contains(@class,"item__link")]/@href')
@@ -83,20 +83,41 @@ def parse(brand):
 
 
 def save_scraped_data(sdata, brand):
+    file_name = str(brand) + "_result.csv"
+    f = open(file_name,"w+")
+    f.write("\"title\", price, url\r\n")
+    test = {
+                'url':'',
+                'title':stats,
+                'price':''
+            }
+    sdata.insert(0, test)
+    for data in sdata:
+        #the_title = "\"", data['title'], "\""
+        f.write("\"" + data['title'] + "\", ")
+        new_price = data['price'].replace(',', "")
+        f.write( new_price + ", ")
+        f.write( data['url'] + "\r\n")
+    #for i in range(10):
+        #f.write("This is line %d\r\n" % (i+1))
+    f.close() 
+    return
+
+def save_scraped_data2(sdata, brand):
     if sdata:
         print ("Writing scraped data to %s-ebay-scraped-data.csv"%(brand))
-        with open('%s-ebay-scraped-data.csv'%(brand),'wb') as csvfile:
-            fieldnames = ["title","price","url"]
-            writer = csv.DictWriter(csvfile,fieldnames = fieldnames,quoting=csv.QUOTE_ALL)
-            writer.writeheader()
-            test = {
-                    'url':'',
-                    'title':stats,
-                    'price':''
-            }
-            sdata.insert(0, test)
-            for data in sdata:
-                writer.writerow(data)
+       # with open('%s-ebay-scraped-data.csv'%(brand),'wb') as csvfile:
+           # fieldnames = ["title","price","url"]
+           # writer = csv.DictWriter(csvfile,fieldnames = fieldnames,quoting=csv.QUOTE_ALL)
+           # writer.writeheader()
+            #test = {
+                   # 'url':'',
+                    #'title':stats,
+                    #'price':''
+           #}
+            # sdata.insert(0, test)
+           # for data in sdata:
+               # writer.writerow(data)
     else:
         print("No data scraped")   
     return
