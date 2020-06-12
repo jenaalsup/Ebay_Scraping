@@ -22,8 +22,8 @@ def parse(brand):
     total_count = 0
 
     while True:
-        #url = 'https://www.ebay.com/sch/i.html?_nkw="{0}"&_sacat=0&_dmd=1&_sop=1'.format(brand)
-        url = 'https://www.ebay.com/sch/i.html?_nkw="{0}"&_sacat=0&_dmd=1&_sop=10&_ipg=200&_pgn={1}'.format(brand, page_num)
+        #url = 'https://www.ebay.com/sch/i.html?_nkw="{0}"&_sacat=0&_dmd=1&_sop=1'.format(brand) - sorts by ending soonest
+        url = 'https://www.ebay.com/sch/i.html?_nkw="{0}"&_sacat=0&_dmd=1&_sop=10&_ipg=200&_pgn={1}'.format(brand, page_num) # sorts by newly listed
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
         failed = False
 
@@ -47,9 +47,16 @@ def parse(brand):
         #product_listings = parser.xpath('//li[contains(@id,"results-listing")]')
         product_listings = parser.xpath('//li[contains(@class, "s-item    ")]')
         raw_result_count = parser.xpath("//h1[contains(@class,'count-heading')]//text()")
+
+        if raw_result_count == None: 
+            print("NILNILNIL")
+        if len(raw_result_count) < 1:
+            print("0000000000")
+            continue
         #result_count = ''.join(raw_result_count).strip()
         result_count = raw_result_count[0]
-        print ("Found {0} for {1}".format(result_count,brand))
+        result_count = result_count.replace(',', "")
+        #print ("Found {0} for {1}".format(result_count,brand))
  
         count = 0
         for product in product_listings:
@@ -57,8 +64,8 @@ def parse(brand):
             raw_title = product.xpath('.//h3[contains(@class,"item__title")]//text()')
             raw_product_type = product.xpath('.//h3[contains(@class,"item__title")]/span[@class="LIGHT_HIGHLIGHT"]/text()')
             raw_price = product.xpath('.//span[contains(@class,"s-item__price")]//text()')
+            
             sponsored = product.xpath('.//span[contains(@role,"text")]//text()')
-
             if (len(sponsored) > 0): # don't count sponsored products
                 continue
 
@@ -79,17 +86,13 @@ def parse(brand):
         if scraped_products:
             total_count = total_count + count
             if count < 200:
+                value = (total_value / total_count) * int(result_count)
                 stats = "  STATS for Brand: %s, Items Scanned: %d, Total Items: %d Value: $%0.2f "%( brand, 
-                total_count, int(result_count), total_value)   
+                total_count, int(result_count), value)   
                 print(stats)
-    
-                stats = "  >> $%0.2f"%((total_value / total_count) * int(result_count) )
-                print( stats )
-
                 print("-------> DONE!")
                 break
             page_num = page_num + 1
-    
     return scraped_products
 
 
@@ -114,7 +117,7 @@ def save_scraped_data(sdata, brand):
     f.close() 
     return
 
-def save_scraped_data2(sdata, brand):
+def save_scraped_data2(sdata, brand): # with the csv library - not compatible with pyinstaller
     if sdata:
         print ("Writing scraped data to %s-ebay-scraped-data.csv"%(brand))
        # with open('%s-ebay-scraped-data.csv'%(brand),'wb') as csvfile:
@@ -138,7 +141,6 @@ def process_file(file):
 
 # main code entry point
 if __name__=="__main__":
-
     argparser = argparse.ArgumentParser()
     argparser.add_argument('brand',help = 'Brand Name')
     args = argparser.parse_args()
@@ -150,5 +152,5 @@ if __name__=="__main__":
         brand = args.brand
         scraped_data = parse(brand)
         save_scraped_data(scraped_data, brand)
-        
+       
     # done
