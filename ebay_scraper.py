@@ -34,12 +34,13 @@ def parse_available(brand):
             print ("Retrieving %s\n\n"%(url)) 
             response = requests.get(url, headers=headers, verify=True)
             parser = html.fromstring(response.text)
-            print ("\n\nParsing page")
+            #print ("\n\nParsing page")
 
             if response.status_code!=200:
                 failed = True
                 continue
             else:
+                print("Availble page num :", page_num)
                 failed = False
                 break
 
@@ -87,18 +88,23 @@ def parse_available(brand):
                         'sold':"Available"
             }
             scraped_products.append(data)
-        print("data: ", data)
+        #print("data: ", data)
+        #print(scraped_products)
         if scraped_products:
             total_count = total_count + count
             if count < 200:
                 value = (total_value / total_count) * int(result_count)
-                stats = "  AVAILABLE STATS for Brand: %s, Items Scanned: %d, Total Items (Including sponsored): %d Value (Without sponsored): $%0.2f "%( brand, 
+                stats = "  AVAILABLE STATS for Brand: %s   Items Scanned: %d   Total Items (Including sponsored): %d   Value (Without sponsored): $%0.2f "%( brand, 
                 total_count, int(result_count), value) 
                 available_value = value  
                 print(stats)
-                print("-------> DONE!")
+                print("-------> DONE WITH AVAILABLE!")
                 break
             page_num = page_num + 1
+            print(page_num)
+        else:
+            print("No available product listings on eBay")
+            break
     return scraped_products
 
 def parse_sold(brand):
@@ -118,19 +124,21 @@ def parse_sold(brand):
 
         # Retries for handling network errors
         for _ in range(5):
-            print ("Retrieving %s\n\n"%(url)) 
+            #print ("Retrieving %s\n\n"%(url)) 
             response = requests.get(url, headers=headers, verify=True)
             parser = html.fromstring(response.text)
-            print ("\n\nParsing page")
+            #print ("\n\nParsing page")
 
             if response.status_code!=200:
                 failed = True
                 continue
             else:
+                print("Sold page num :", page_num)
                 failed = False
                 break
 
         if failed:
+            print("The eBay network is unresponsive. Please try again later (or now).")
             return []
 
         #product_listings = parser.xpath('//li[contains(@id,"results-listing")]')
@@ -170,60 +178,47 @@ def parse_sold(brand):
                         'sold':"Sold"
             }
             scraped_products.append(data)
-        print("data: ", data)
+        #print("data: ", data)
         if scraped_products:
             total_count = total_count + count
             if count < 200:
                 value = (total_value / total_count) * int(result_count)
-                sold_stats = "  SOLD STATS for Brand: %s, Total Sold Items: %d, Value: $%0.2f "%( brand, 
+                sold_stats = "  SOLD STATS for Brand: %s   Total Sold Items: %d   Value: $%0.2f "%( brand, 
                 total_count, value)   
                 print(sold_stats)
                 sold_value = value
-                print("-------> DONE!")
+                print("-------> DONE WITH SOLD!")
                 break
             page_num = page_num + 1
+        else:
+            print("No sold product listings on eBay")
+            break
     return scraped_products
 
 def save_scraped_data(sdata, brand):
-    file_name = str(brand) + "_result.csv"
-    f = open(file_name,"w+")
-    f.write("\"title\", price, sold, url\r\n")
-
-    total_value_stats = "  TOTAL VALUE OF AVAILABLE AND SOLD ITEMS: $" + str(available_value + sold_value)
-    f.write( stats) 
-    f.write("\r\n")
-    f.write(sold_stats)
-    f.write( "\r\n" )
-    f.write(total_value_stats)
-    f.write( "\r\n" )
-
-    for data in sdata:
-        f.write("\"" + data['title'] + "\", ")
-        new_price = data['price'].replace(',', "")
-        f.write( new_price + ", ")
-        f.write( data['sold'] + ", ")
-        f.write( data['url'] + "\r\n")
-    f.close() 
-    return
-
-# not being called
-def save_scraped_data2(sdata, brand): # with the csv library - not compatible with pyinstaller
     if sdata:
-        print ("Writing scraped data to %s-ebay-scraped-data.csv"%(brand))
-       # with open('%s-ebay-scraped-data.csv'%(brand),'wb') as csvfile:
-           # fieldnames = ["title","price","url"]
-           # writer = csv.DictWriter(csvfile,fieldnames = fieldnames,quoting=csv.QUOTE_ALL)
-           # writer.writeheader()
-            #test = {
-                   # 'url':'',
-                    #'title':stats,
-                    #'price':''
-           #}
-            # sdata.insert(0, test)
-           # for data in sdata:
-               # writer.writerow(data)
+        file_name = str(brand) + "_result.csv"
+        f = open(file_name,"w+")
+        f.write("\"title\", price, sold, url\r\n")
+
+        total_value_stats = "  TOTAL VALUE OF AVAILABLE AND SOLD ITEMS: $" + str(available_value + sold_value)
+        print(total_value_stats)
+        f.write( stats) 
+        f.write("\r\n")
+        f.write(sold_stats)
+        f.write( "\r\n" )
+        f.write(total_value_stats)
+        f.write( "\r\n" )
+
+        for data in sdata:
+            f.write("\"" + data['title'] + "\", ")
+            new_price = data['price'].replace(',', "")
+            f.write( new_price + ", ")
+            f.write( data['sold'] + ", ")
+            f.write( data['url'] + "\r\n")
+        f.close() 
     else:
-        print("No data scraped")   
+        print("No data scraped")
     return
 
 def process_file(file):
