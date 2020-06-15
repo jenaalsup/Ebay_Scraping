@@ -9,7 +9,7 @@ from price_parser import Price
 # keeps track of global data stats
 
 stats = ""
-stats_sold = ""
+sold_stats = ""
 scraped_products = []
 available_value = 0
 sold_value = 0
@@ -42,7 +42,7 @@ def parse_available(brand):
                 failed = True
                 continue
             else:
-                print("Availble page num :", page_num)
+                print("Available page num :", page_num)
                 failed = False
                 break
 
