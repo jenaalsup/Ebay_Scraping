@@ -19,7 +19,7 @@ def parse_available(brand):
     url_brand = (brand.replace(' ', '%20')).lower()
 
     while True:
-        url = 'https://www.thredup.com/women?department_tags=women&sort=newest_first&text={0}&page={1}'.format(url_brand, page_num)
+        url = 'https://www.thredup.com/women?department_tags=women&sort=newest_first&text={0}&page={1}'.format(url_brand, page_num) # sorts by newly listed
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
         failed = False
 
