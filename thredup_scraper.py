@@ -14,15 +14,14 @@ def parse_available(brand):
     global available_value 
 
     page_num = 1 
-   # scraped_products = []
     total_value = 0 
     total_count = 0 
 
-    # change spaces in the brand name to '%20' to match the poshmark url
+    # change spaces in the brand name to '%20' to match the thredup url
     url_brand = (brand.replace(' ', '%20')).lower()
 
     while True:
-        url = 'https://poshmark.com/search?query={0}&sort_by=added_desc&max_id={1}'.format(url_brand, page_num) # sorts by just in
+        url = 'https://www.thredup.com/women?department_tags=women&sort=newest_first&text={0}&page={1}'.format(url_brand, page_num)
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
         failed = False
 
@@ -42,22 +41,22 @@ def parse_available(brand):
                 break
 
         if failed:
-            print("The Poshmark network is unresponsive. Please try again later (or now).")
+            print("The thredUP network is unresponsive. Please try again later (or now).")
             return []
 
-        product_listings = parser.xpath('//div[contains(@class, "card card--small")]')
+        product_listings = parser.xpath('//div[contains(@class, "grid-item")]')
  
         count = 0
         for product in product_listings:
-            raw_url = product.xpath('.//a[contains(@class,"tile__covershot")]/@href')
-            raw_title = product.xpath('.//a[contains(@class,"tile__title")]//text()')
-            raw_price = product.xpath('.//span[contains(@class,"p--t--1")]//text()')
-            raw_title[0].encode('ascii', 'ignore')
+            raw_url = product.xpath('.//a[contains(@class,"_1di0il_2VkBBwWJz9eDxoJ")]/@href')
+            raw_title_and_price = product.xpath('.//div[contains(@class,"_138U7gqcrSxaloaCpyMPZg")]//text()')
+            raw_title_and_price[0].encode('ascii', 'ignore')
 
             count = count + 1
-            product_url = 'https://poshmark.com' + raw_url[0]
-            title = ' '.join(' '.join(raw_title).split())
-            price  = ' '.join(' '.join(raw_price).split())
+            product_url = 'https://thredup.com' + raw_url[0]
+            title = raw_title_and_price[0]
+            price  = '$' + raw_title_and_price[2] 
+            print("PRICE: ", price)
             parsed_price = Price.fromstring(price)
             total_value = total_value + parsed_price.amount_float
 
@@ -71,8 +70,8 @@ def parse_available(brand):
 
         if scraped_products:
             total_count = total_count + count
-            if count < 48: # 48 items per page on Poshmark
-                stats = "  AVAILABLE STATS for Brand: %s   Items Scanned: %d   Total Value: $%0.2f "%( brand, 
+            if count < 50: # 50 items per page on thredUP
+                stats = "  AVAILABLE STATS for Brand: %s   Items Scanned: %d   Value (Without sponsored): $%0.2f "%( brand, 
                 total_count, total_value)
                 available_value = total_value  
                 print(stats)
@@ -80,7 +79,7 @@ def parse_available(brand):
                 break
             page_num = page_num + 1
         else:
-            print("No available product listings on Poshmark")
+            print("No available product listings on thredUP")
             break
     return scraped_products
 
@@ -92,11 +91,11 @@ def parse_sold(brand):
     total_value = 0 
     total_count = 0 
 
-    # change spaces in the brand name to '%20' to match the poshmark url
+    # change spaces in the brand name to '%20' to match the thredUP url
     url_brand = (brand.replace(' ', '%20')).lower()
 
     while True:
-        url = 'https://poshmark.com/search?query={0}&availability=sold_out&sort_by=added_desc&max_id={1}'.format(url_brand, page_num) # sorts by just in
+        url = 'https://thredup.com/search?query={0}&availability=sold_out&sort_by=added_desc&max_id={1}'.format(url_brand, page_num) # sorts by just in
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
         failed = False
 
@@ -116,7 +115,7 @@ def parse_sold(brand):
                 break
 
         if failed:
-            print("The Poshmark network is unresponsive. Please try again later (or now).")
+            print("The thredUP network is unresponsive. Please try again later (or now).")
             return []
 
         product_listings = parser.xpath('//div[contains(@class, "card card--small")]')
@@ -129,7 +128,7 @@ def parse_sold(brand):
             raw_title[0].encode('ascii', 'ignore')
 
             count = count + 1
-            product_url = 'https://poshmark.com' + raw_url[0]
+            product_url = 'https://thredup.com' + raw_url[0]
             title = ' '.join(' '.join(raw_title).split())
             price  = ' '.join(' '.join(raw_price).split())
             parsed_price = Price.fromstring(price)
@@ -145,8 +144,8 @@ def parse_sold(brand):
 
         if scraped_products:
             total_count = total_count + count
-            if count < 48: # 48 items per page on Poshmark
-                sold_stats = "  SOLD STATS for Brand: %s   Items Scanned: %d   Total Value: $%0.2f "%( brand, 
+            if count < 50: # 50 items per page on thredUP
+                sold_stats = "  SOLD STATS for Brand: %s   Items Scanned: %d   Value (Without sponsored): $%0.2f "%( brand, 
                 total_count, total_value)
                 sold_value = total_value  
                 print(sold_stats)
@@ -154,13 +153,13 @@ def parse_sold(brand):
                 break
             page_num = page_num + 1
         else:
-            print("No sold product listings on Poshmark")
+            print("No sold product listings on thredUP")
             break
     return scraped_products
 
 def save_scraped_data(sdata, brand):
     if sdata:
-        file_name = "Poshmark_" + str(brand) + ".csv"
+        file_name = "thredUP_" + str(brand) + ".csv"
         f = open(file_name,"w+")
         f.write("\"title\", price, sold, url\r\n")
 
