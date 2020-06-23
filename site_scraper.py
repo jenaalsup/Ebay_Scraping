@@ -78,7 +78,8 @@ def ebay_parse_available(brand):
                   'url':raw_url[0],
                   'title':title,
                   'price':price, 
-                  'sold':"Available"
+                  'sold':"Available",
+                  'size':"Unknown"
       }
       scraped_products.append(data)
     if scraped_products:
@@ -132,7 +133,6 @@ def ebay_parse_sold(brand):
       return []
 
     product_listings = parser.xpath('//li[contains(@class, "s-item    ")]')
-    print("PRODUCT LISTINGS:", product_listings)
     raw_result_count = parser.xpath("//h1[contains(@class,'count-heading')]//text()")
 
     if raw_result_count == None: 
@@ -151,7 +151,6 @@ def ebay_parse_sold(brand):
       raw_product_type = product.xpath('.//h3[contains(@class,"item__title")]/span[@class="LIGHT_HIGHLIGHT"]/text()')
       raw_price = product.xpath('.//span[contains(@class,"s-item__price")]//text()')
       raw_sold_date = product.xpath('.//span[contains(@class,"s-item__ended-date")]//text()')
-      print("RAW SOLD DATE: ", raw_sold_date)
 
       count = count + 1
       price  = ' '.join(' '.join(raw_price).split())
@@ -161,13 +160,13 @@ def ebay_parse_sold(brand):
       product_type = ''.join(raw_product_type)
       title = title.replace(product_type, '').strip()
       sold_date = raw_sold_date[0].split()[0]
-      print("SOLD DATE: ", sold_date)
 
       data = {
                   'url':raw_url[0],
                   'title':title,
                   'price':price, 
-                  'sold':"Sold: "+sold_date
+                  'sold':"Sold: "+sold_date,
+                  'size':"Unknown"
       }
       scraped_products.append(data)
 
@@ -192,7 +191,6 @@ def poshmark_parse_available(brand):
   global available_value 
 
   page_num = 1 
-  # scraped_products = []
   total_value = 0 
   total_count = 0 
 
@@ -229,12 +227,15 @@ def poshmark_parse_available(brand):
       raw_url = product.xpath('.//a[contains(@class,"tile__covershot")]/@href')
       raw_title = product.xpath('.//a[contains(@class,"tile__title")]//text()')
       raw_price = product.xpath('.//span[contains(@class,"p--t--1")]//text()')
+      raw_size = product.xpath('.//a[contains(@class,"tile__details__pipe__size")]//text()')
       raw_title[0].encode('ascii', 'ignore')
 
       count = count + 1
       product_url = 'https://poshmark.com' + raw_url[0]
       title = ' '.join(' '.join(raw_title).split())
       price  = ' '.join(' '.join(raw_price).split())
+      size  = ' '.join(' '.join(raw_size).split())
+      size = size[6: len(size)]
       parsed_price = Price.fromstring(price)
       total_value = total_value + parsed_price.amount_float
 
@@ -242,7 +243,8 @@ def poshmark_parse_available(brand):
                   'url':product_url,
                   'title':title,
                   'price':price, 
-                  'sold':"Available"
+                  'sold':"Available",
+                  'size':size
       }
       scraped_products.append(data)
 
@@ -303,12 +305,15 @@ def poshmark_parse_sold(brand):
       raw_url = product.xpath('.//a[contains(@class,"tile__covershot")]/@href')
       raw_title = product.xpath('.//a[contains(@class,"tile__title")]//text()')
       raw_price = product.xpath('.//span[contains(@class,"p--t--1")]//text()')
+      raw_size = product.xpath('.//a[contains(@class,"tile__details__pipe__size")]//text()')
       raw_title[0].encode('ascii', 'ignore')
 
       count = count + 1
       product_url = 'https://poshmark.com' + raw_url[0]
       title = ' '.join(' '.join(raw_title).split())
       price  = ' '.join(' '.join(raw_price).split())
+      size  = ' '.join(' '.join(raw_size).split())
+      size = size[6: len(size)]
       parsed_price = Price.fromstring(price)
       total_value = total_value + parsed_price.amount_float
 
@@ -316,7 +321,8 @@ def poshmark_parse_sold(brand):
                   'url':product_url,
                   'title':title,
                   'price':price, 
-                  'sold':"Sold"
+                  'sold':"Sold",
+                  'size':size
       }
       scraped_products.append(data)
 
@@ -339,6 +345,7 @@ def thredup_parse_available(brand):
   global stats 
   global available_value 
 
+  scraped_products = []
   page_num = 1 
   total_value = 0 
   total_count = 0 
@@ -389,7 +396,8 @@ def thredup_parse_available(brand):
                   'url':product_url,
                   'title':title,
                   'price':price, 
-                  'sold':"Available"
+                  'sold':"Available",
+                  'size':title
       }
       scraped_products.append(data)
 
@@ -421,7 +429,7 @@ def save_scraped_data(website, sdata, brand):
       file_name = str(brand) + ".csv"
 
     f = open(file_name,"w+")
-    f.write("\"title\", price, sold, url\r\n")
+    f.write("\"title\", price, sold, size, url\r\n")
 
     total_value_stats = "  TOTAL VALUE OF AVAILABLE AND SOLD ITEMS: $" + str(available_value + sold_value)
     final_global_value = final_global_value + available_value + sold_value
@@ -436,9 +444,10 @@ def save_scraped_data(website, sdata, brand):
     for data in sdata:
       f.write("\"" + data['title'] + "\", ")
       new_price = data['price'].replace(',', "")
-      f.write( new_price + ", ")
-      f.write( data['sold'] + ", ")
-      f.write( data['url'] + "\r\n")
+      f.write(new_price + ", ")
+      f.write(data['sold'] + ", ")
+      f.write(data['size'] + ", ")
+      f.write(data['url'] + "\r\n")
     f.close() 
   else:
     print("No data scraped")
@@ -452,20 +461,21 @@ if __name__=="__main__":
   brand = args.brand
 
   # ebay
-  ebay_scraped_data = ebay_parse_available(brand)
-  ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
-  save_scraped_data('ebay', ebay_scraped_data, brand)
-  print("DONE WITH EBAY")
+  #ebay_scraped_data = ebay_parse_available(brand)
+  #ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
+  #save_scraped_data('ebay', ebay_scraped_data, brand)
+  #print("DONE WITH EBAY")
 
   # poshmark
-  poshmark_scraped_data = poshmark_parse_available(brand)
-  poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
-  save_scraped_data('poshmark', poshmark_scraped_data, brand)
+  #poshmark_scraped_data = poshmark_parse_available(brand)
+  #poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
+  #save_scraped_data('poshmark', poshmark_scraped_data, brand)
   print("DONE WITH POSHMARK")
 
   # thredup
-  scraped_data = thredup_parse_available(brand)
-  save_scraped_data('thredup', scraped_data, brand)
+  thredup_scraped_data = thredup_parse_available(brand)
+  print(thredup_scraped_data)
+  save_scraped_data('thredup', thredup_scraped_data, brand)
   print("DONE WITH THREDUP")
 
   print("TOTAL VALUE OF ALL ITEMS ON EBAY, POSHMARK, THREDUP: " + str(final_global_value))
