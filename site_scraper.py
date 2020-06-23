@@ -152,6 +152,7 @@ def ebay_parse_sold(brand):
       raw_price = product.xpath('.//span[contains(@class,"s-item__price")]//text()')
       raw_sold_date = product.xpath('.//span[contains(@class,"s-item__ended-date")]//text()')
       print("RAW SOLD DATE: ", raw_sold_date)
+
       count = count + 1
       price  = ' '.join(' '.join(raw_price).split())
       parsed_price = Price.fromstring(price)
@@ -159,12 +160,14 @@ def ebay_parse_sold(brand):
       title = ' '.join(' '.join(raw_title).split())
       product_type = ''.join(raw_product_type)
       title = title.replace(product_type, '').strip()
+      sold_date = raw_sold_date[0].split()[0]
+      print("SOLD DATE: ", sold_date)
 
       data = {
                   'url':raw_url[0],
                   'title':title,
                   'price':price, 
-                  'sold':"Sold"
+                  'sold':"Sold: "+sold_date
       }
       scraped_products.append(data)
 
@@ -449,21 +452,20 @@ if __name__=="__main__":
   brand = args.brand
 
   # ebay
-  #ebay_scraped_data = ebay_parse_available(brand)
- #ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
-  ebay_scraped_data = ebay_parse_sold(brand)
+  ebay_scraped_data = ebay_parse_available(brand)
+  ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
   save_scraped_data('ebay', ebay_scraped_data, brand)
   print("DONE WITH EBAY")
 
   # poshmark
-  #poshmark_scraped_data = poshmark_parse_available(brand)
-  #poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
-  #save_scraped_data('poshmark', poshmark_scraped_data, brand)
-  #print("DONE WITH POSHMARK")
+  poshmark_scraped_data = poshmark_parse_available(brand)
+  poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
+  save_scraped_data('poshmark', poshmark_scraped_data, brand)
+  print("DONE WITH POSHMARK")
 
   # thredup
-  #scraped_data = thredup_parse_available(brand)
-  #save_scraped_data('thredup', scraped_data, brand)
-  #print("DONE WITH THREDUP")
+  scraped_data = thredup_parse_available(brand)
+  save_scraped_data('thredup', scraped_data, brand)
+  print("DONE WITH THREDUP")
 
   print("TOTAL VALUE OF ALL ITEMS ON EBAY, POSHMARK, THREDUP: " + str(final_global_value))
