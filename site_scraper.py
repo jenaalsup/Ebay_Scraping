@@ -79,7 +79,6 @@ def ebay_parse_available(brand):
       title = title.replace(product_type, '').strip()
 
       # check for sizes in product title
-      size = 'Unknown'
       if title.lower().find('xsmall') >= 0:
         size = 'Xsmall'
         sizes[0] = sizes[0] + 1
@@ -188,7 +187,6 @@ def ebay_parse_sold(brand):
       sold_date = raw_sold_date[0].split()[0]
 
       # check for sizes in product title
-      size = 'Unknown'
       if title.lower().find('xsmall') >= 0:
         size = 'Xsmall'
         sizes[0] = sizes[0] + 1
@@ -236,6 +234,7 @@ def ebay_parse_sold(brand):
 def poshmark_parse_available(brand):
   global stats 
   global available_value 
+  global sizes
 
   page_num = 1 
   total_value = 0 
@@ -286,6 +285,20 @@ def poshmark_parse_available(brand):
       parsed_price = Price.fromstring(price)
       total_value = total_value + parsed_price.amount_float
 
+      # check for sizes in product title
+      if size.lower().find('xs') >= 0:
+        sizes[0] = sizes[0] + 1
+      elif size.lower().find('s') >= 0:
+        sizes[1] = sizes[1] + 1
+      elif size.lower().find('m') >= 0:
+        sizes[2] = sizes[2] + 1
+      elif (size.lower()).find('xl') >= 0:
+        sizes[4] = sizes[4] + 1
+      elif size.lower().find('l') >= 0:
+        sizes[3] = sizes[3] + 1
+      else:  # unknown
+        sizes[5] = sizes[5] + 1
+
       data = {
                   'url':product_url,
                   'title':title,
@@ -312,7 +325,8 @@ def poshmark_parse_available(brand):
 
 def poshmark_parse_sold(brand):
   global sold_stats 
-  global sold_value 
+  global sold_value
+  global sizes
 
   page_num = 1 
   total_value = 0 
@@ -363,6 +377,20 @@ def poshmark_parse_sold(brand):
       size = size[6: len(size)]
       parsed_price = Price.fromstring(price)
       total_value = total_value + parsed_price.amount_float
+
+      # check for sizes
+      if size.lower().find('xs') >= 0:
+        sizes[0] = sizes[0] + 1
+      elif size.lower().find('s') >= 0:
+        sizes[1] = sizes[1] + 1
+      elif size.lower().find('m') >= 0:
+        sizes[2] = sizes[2] + 1
+      elif size.lower().find('xl') >= 0:
+        sizes[4] = sizes[4] + 1
+      elif size.lower().find('l') >= 0:
+        sizes[3] = sizes[3] + 1
+      else:  # unknown
+        sizes[5] = sizes[5] + 1
 
       data = {
                   'url':product_url,
@@ -511,16 +539,16 @@ if __name__=="__main__":
   brand = args.brand
 
   # ebay
-  ebay_scraped_data = ebay_parse_available(brand)
-  ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
-  save_scraped_data('ebay', ebay_scraped_data, brand)
-  print("DONE WITH EBAY")
+  #ebay_scraped_data = ebay_parse_available(brand)
+ # ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
+  #save_scraped_data('ebay', ebay_scraped_data, brand)
+  #print("DONE WITH EBAY")
 
   # poshmark
-  #poshmark_scraped_data = poshmark_parse_available(brand)
- # poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
- # save_scraped_data('poshmark', poshmark_scraped_data, brand)
- # print("DONE WITH POSHMARK")
+  poshmark_scraped_data = poshmark_parse_available(brand)
+  poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
+  save_scraped_data('poshmark', poshmark_scraped_data, brand)
+  print("DONE WITH POSHMARK")
 
   # thredup
   #thredup_scraped_data = thredup_parse_available(brand)
