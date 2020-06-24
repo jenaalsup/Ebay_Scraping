@@ -1,18 +1,25 @@
 "title", price, sold, size, url
-  AVAILABLE STATS for Brand: capezio   Items Scanned: 29   Value (Without sponsored): $467.71 
+  AVAILABLE STATS for Brand: capezio   Items Scanned: 35   Value (Without sponsored): $570.65 
 
-  TOTAL VALUE OF AVAILABLE AND SOLD ITEMS: $467.71000000000015
-"Size XL", $11.99, Available, Size XL, https://thredup.com/product/women-cotton-capezio-black-leggings/76777577
+  Number of xsmall, small, medium, large, xlarge, unknown: 4, 10, 9, 5, 1, 6
+  TOTAL VALUE OF AVAILABLE AND SOLD ITEMS: $570.6500000000002
+"Size Sm", $14.99, Available, Size Sm, https://thredup.com/product/women-ramie-capezio-black-sweater-vest/76847821
+"Size Sm", $14.99, Available, Size Sm, https://thredup.com/product/women-capezio-black-bodysuit/76918312
+"Size Med", $10.99, Available, Size Med, https://thredup.com/product/women-polyester-capezio-gray-active-t-shirt/76802768
 "Size Sm", $12.99, Available, Size Sm, https://thredup.com/product/women-polyester-capezio-tan-long-sleeve-top/76601707
 "Size XXL", $12.99, Available, Size XXL, https://thredup.com/product/women-rayon-capezio-black-short-sleeve-blouse/76465756
+"Size Med", $16.99, Available, Size Med, https://thredup.com/product/women-nylon-capezio-black-one-piece-swimsuit/76538919
 "Size Med", $17.99, Available, Size Med, https://thredup.com/product/women-acrylic-capezio-black-cardigan/76443669
 "Size XS", $17.99, Available, Size XS, https://thredup.com/product/women-cotton-capezio-green-vest/76422752
 "Size 7 1/2", $22.99, Available, Size 7 1/2, https://thredup.com/product/women-capezio-black-heels/76428955
 "Size Med", $16.99, Available, Size Med, https://thredup.com/product/women-capezio-black-bodysuit/76519667
 "Size Sm", $20.99, Available, Size Sm, https://thredup.com/product/women-acrylic-capezio-tan-cardigan/76341658
+"Size 8 1/2", $20.99, Available, Size 8 1/2, https://thredup.com/product/women-leather-capezio-black-heels/76213829
 "Size Lg", $20.99, Available, Size Lg, https://thredup.com/product/women-rayon-capezio-gray-cardigan/76188833
 "Size Sm", $19.99, Available, Size Sm, https://thredup.com/product/women-nylon-capezio-tan-jumpsuit/76122037
 "Size Med", $15.99, Available, Size Med, https://thredup.com/product/women-polyester-capezio-gray-swimsuit-cover-up/76176202
+"Size Med", $15.99, Available, Size Med, https://thredup.com/product/women-nylon-capezio-black-sports-bra/76132375
+"Size Lg", $19.99, Available, Size Lg, https://thredup.com/product/women-capezio-black-bodysuit/75883437
 "Size Lg", $14.99, Available, Size Lg, https://thredup.com/product/women-polyester-capezio-black-casual-skirt/76040292
 "Size Sm", $15.99, Available, Size Sm, https://thredup.com/product/women-nylon-capezio-tan-bodysuit/75981056
 "Size Lg", $17.99, Available, Size Lg, https://thredup.com/product/women-nylon-capezio-gray-active-pants/75996967
@@ -23,11 +30,11 @@
 "Satchel", $22.99, Available, Satchel, https://thredup.com/product/women-capezio-brown-satchel/74736771
 "Size Sm", $13.99, Available, Size Sm, https://thredup.com/product/women-capezio-black-casual-pants/74425845
 "Crossbody Bag", $23.99, Available, Crossbody Bag, https://thredup.com/product/women-capezio-ivory-crossbody-bag/72704319
-"Size Lg", $11.99, Available, Size Lg, https://thredup.com/product/women-polyester-capezio-black-casual-skirt/72454027
 "Size Sm", $12.99, Available, Size Sm, https://thredup.com/product/women-polyester-capezio-teal-active-pants/72417940
 "Crossbody Bag", $21.99, Available, Crossbody Bag, https://thredup.com/product/women-capezio-brown-crossbody-bag/71887216
 "Size Med", $11.99, Available, Size Med, https://thredup.com/product/women-leather-capezio-burgundy-leather-belt/71761268
 "Crossbody Bag", $13.99, Available, Crossbody Bag, https://thredup.com/product/women-capezio-black-crossbody-bag/70422569
+"Size XS", $11.99, Available, Size XS, https://thredup.com/product/women-polyester-capezio-black-casual-pants/68504285
 "Size XS", $13.99, Available, Size XS, https://thredup.com/product/women-silk-capezio-green-long-sleeve-silk-top/67825449
 "Size Sm", $10.99, Available, Size Sm, https://thredup.com/product/women-leather-capezio-brown-leather-belt/66956072
 "Size XS", $11.99, Available, Size XS, https://thredup.com/product/women-capezio-purple-long-sleeve-blouse/64564204

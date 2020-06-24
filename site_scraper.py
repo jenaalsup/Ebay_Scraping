@@ -285,7 +285,7 @@ def poshmark_parse_available(brand):
       parsed_price = Price.fromstring(price)
       total_value = total_value + parsed_price.amount_float
 
-      # check for sizes in product title
+      # check for sizes
       if size.lower().find('xs') >= 0:
         sizes[0] = sizes[0] + 1
       elif size.lower().find('s') >= 0:
@@ -419,6 +419,7 @@ def poshmark_parse_sold(brand):
 def thredup_parse_available(brand):
   global stats 
   global available_value 
+  global sizes
 
   scraped_products = []
   page_num = 1 
@@ -438,7 +439,6 @@ def thredup_parse_available(brand):
       print ("Retrieving %s\n\n"%(url)) 
       response = requests.get(url, headers=headers, verify=True)
       parser = html.fromstring(response.text)
-      print("Done retrieving")
 
       if response.status_code!=200:
         failed = True
@@ -466,6 +466,20 @@ def thredup_parse_available(brand):
       price  = '$' + raw_title_and_price[2] 
       parsed_price = Price.fromstring(price)
       total_value = total_value + parsed_price.amount_float
+
+     # check for sizes
+      if title.lower().find('xs') >= 0:
+        sizes[0] = sizes[0] + 1
+      elif title.lower().find('sm') >= 0:
+        sizes[1] = sizes[1] + 1
+      elif title.lower().find('med') >= 0:
+        sizes[2] = sizes[2] + 1
+      elif (title.lower()).find('xl') >= 0:
+        sizes[4] = sizes[4] + 1
+      elif title.lower().find('lg') >= 0:
+        sizes[3] = sizes[3] + 1
+      else:  # unknown
+        sizes[5] = sizes[5] + 1
 
       data = {
                   'url':product_url,
@@ -540,20 +554,19 @@ if __name__=="__main__":
 
   # ebay
   #ebay_scraped_data = ebay_parse_available(brand)
- # ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
+  #ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
   #save_scraped_data('ebay', ebay_scraped_data, brand)
   #print("DONE WITH EBAY")
 
   # poshmark
-  poshmark_scraped_data = poshmark_parse_available(brand)
-  poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
-  save_scraped_data('poshmark', poshmark_scraped_data, brand)
-  print("DONE WITH POSHMARK")
+  #poshmark_scraped_data = poshmark_parse_available(brand)
+  #poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
+  #save_scraped_data('poshmark', poshmark_scraped_data, brand)
+  #print("DONE WITH POSHMARK")
 
   # thredup
-  #thredup_scraped_data = thredup_parse_available(brand)
- # print(thredup_scraped_data)
-  #save_scraped_data('thredup', thredup_scraped_data, brand)
-  #print("DONE WITH THREDUP")
+  thredup_scraped_data = thredup_parse_available(brand)
+  save_scraped_data('thredup', thredup_scraped_data, brand)
+  print("DONE WITH THREDUP")
 
   print("TOTAL VALUE OF ALL ITEMS ON EBAY, POSHMARK, THREDUP: " + str(final_global_value))
