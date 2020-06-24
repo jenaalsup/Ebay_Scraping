@@ -10,9 +10,13 @@ available_value = 0
 sold_value = 0
 final_global_value = 0
 
+# xsmall, small, medium, large, xlarge, unknown
+sizes = [0, 0, 0, 0, 0, 0]
+
 def ebay_parse_available(brand):
   global stats
   global available_value
+  global sizes
 
   page_num = 1
   scraped_products = []
@@ -78,14 +82,22 @@ def ebay_parse_available(brand):
       size = 'Unknown'
       if title.lower().find('xsmall') >= 0:
         size = 'Xsmall'
+        sizes[0] = sizes[0] + 1
       elif title.lower().find('small') >= 0:
         size = 'Small'
+        sizes[1] = sizes[1] + 1
       elif title.lower().find('medium') >= 0:
         size = 'Medium'
+        sizes[2] = sizes[2] + 1
       elif title.lower().find('large') >= 0:
         size = 'Large'
+        sizes[3] = sizes[3] + 1
       elif title.lower().find('xlarge') >= 0:
         size = 'XLarge'
+        sizes[4] = sizes[4] + 1
+      else:  
+        size = 'Unknown'
+        sizes[5] = sizes[5] + 1
 
       data = {
                   'url':raw_url[0],
@@ -114,6 +126,7 @@ def ebay_parse_available(brand):
 def ebay_parse_sold(brand):
   global sold_stats
   global sold_value
+  global sizes
 
   page_num = 1
   scraped_products = []
@@ -178,14 +191,22 @@ def ebay_parse_sold(brand):
       size = 'Unknown'
       if title.lower().find('xsmall') >= 0:
         size = 'Xsmall'
+        sizes[0] = sizes[0] + 1
       elif title.lower().find('small') >= 0:
         size = 'Small'
+        sizes[1] = sizes[1] + 1
       elif title.lower().find('medium') >= 0:
         size = 'Medium'
+        sizes[2] = sizes[2] + 1
       elif title.lower().find('large') >= 0:
         size = 'Large'
+        sizes[3] = sizes[3] + 1
       elif title.lower().find('xlarge') >= 0:
         size = 'XLarge'
+        sizes[4] = sizes[4] + 1
+      else:  
+        size = 'Unknown'
+        sizes[5] = sizes[5] + 1
 
       data = {
                   'url':raw_url[0],
@@ -457,12 +478,15 @@ def save_scraped_data(website, sdata, brand):
     f = open(file_name,"w+")
     f.write("\"title\", price, sold, size, url\r\n")
 
+    size_display = "  Number of xsmall, small, medium, large, xlarge, unknown: " + str(sizes).strip('[]')
     total_value_stats = "  TOTAL VALUE OF AVAILABLE AND SOLD ITEMS: $" + str(available_value + sold_value)
     final_global_value = final_global_value + available_value + sold_value
     print(total_value_stats)
-    f.write( stats) 
+    f.write(stats) 
     f.write("\r\n")
     f.write(sold_stats)
+    f.write("\r\n")
+    f.write(size_display)
     f.write( "\r\n" )
     f.write(total_value_stats)
     f.write( "\r\n" )
