@@ -74,12 +74,25 @@ def ebay_parse_available(brand):
       product_type = ''.join(raw_product_type)
       title = title.replace(product_type, '').strip()
 
+      # check for sizes in product title
+      size = 'Unknown'
+      if title.lower().find('xsmall') >= 0:
+        size = 'Xsmall'
+      elif title.lower().find('small') >= 0:
+        size = 'Small'
+      elif title.lower().find('medium') >= 0:
+        size = 'Medium'
+      elif title.lower().find('large') >= 0:
+        size = 'Large'
+      elif title.lower().find('xlarge') >= 0:
+        size = 'XLarge'
+
       data = {
                   'url':raw_url[0],
                   'title':title,
                   'price':price, 
                   'sold':"Available",
-                  'size':"Unknown"
+                  'size':size
       }
       scraped_products.append(data)
     if scraped_products:
@@ -161,12 +174,25 @@ def ebay_parse_sold(brand):
       title = title.replace(product_type, '').strip()
       sold_date = raw_sold_date[0].split()[0]
 
+      # check for sizes in product title
+      size = 'Unknown'
+      if title.lower().find('xsmall') >= 0:
+        size = 'Xsmall'
+      elif title.lower().find('small') >= 0:
+        size = 'Small'
+      elif title.lower().find('medium') >= 0:
+        size = 'Medium'
+      elif title.lower().find('large') >= 0:
+        size = 'Large'
+      elif title.lower().find('xlarge') >= 0:
+        size = 'XLarge'
+
       data = {
                   'url':raw_url[0],
                   'title':title,
                   'price':price, 
                   'sold':"Sold: "+sold_date,
-                  'size':"Unknown"
+                  'size':size
       }
       scraped_products.append(data)
 
@@ -461,21 +487,21 @@ if __name__=="__main__":
   brand = args.brand
 
   # ebay
-  #ebay_scraped_data = ebay_parse_available(brand)
-  #ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
-  #save_scraped_data('ebay', ebay_scraped_data, brand)
-  #print("DONE WITH EBAY")
+  ebay_scraped_data = ebay_parse_available(brand)
+  ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
+  save_scraped_data('ebay', ebay_scraped_data, brand)
+  print("DONE WITH EBAY")
 
   # poshmark
   #poshmark_scraped_data = poshmark_parse_available(brand)
-  #poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
-  #save_scraped_data('poshmark', poshmark_scraped_data, brand)
-  print("DONE WITH POSHMARK")
+ # poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
+ # save_scraped_data('poshmark', poshmark_scraped_data, brand)
+ # print("DONE WITH POSHMARK")
 
   # thredup
-  thredup_scraped_data = thredup_parse_available(brand)
-  print(thredup_scraped_data)
-  save_scraped_data('thredup', thredup_scraped_data, brand)
-  print("DONE WITH THREDUP")
+  #thredup_scraped_data = thredup_parse_available(brand)
+ # print(thredup_scraped_data)
+  #save_scraped_data('thredup', thredup_scraped_data, brand)
+  #print("DONE WITH THREDUP")
 
   print("TOTAL VALUE OF ALL ITEMS ON EBAY, POSHMARK, THREDUP: " + str(final_global_value))
