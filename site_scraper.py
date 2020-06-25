@@ -3,8 +3,8 @@ import requests
 from lxml import html
 from price_parser import Price
 
-stats = ""
-sold_stats = ""
+stats = "" # available total value stats
+sold_stats = "" # sold total value stats
 scraped_products = []
 available_value = 0
 sold_value = 0
@@ -28,12 +28,15 @@ def ebay_parse_available(brand):
     headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
     failed = False
 
-    # Retries for handling network errors
+    # Retries 5 times for handling network errors
     for _ in range(5):
-      print ("Retrieving %s\n\n"%(url)) 
-      response = requests.get(url, headers=headers, verify=True)
+      print ("Retrieving %s"%(url)) 
+      try: 
+        response = requests.get(url, headers=headers, verify=True, timeout=2)
+      except: # max retries or timeout exception because website is slow
+        print("MAX RETRIES OR TIMEOUT EXCEPTION BECAUSE WEBSITE IS SLOW")
+        return scraped_products
       parser = html.fromstring(response.text)
-      print("Done retrieving")
 
       if response.status_code!=200: 
         print("eBay URL request failed to respond, retrying...")
@@ -137,12 +140,15 @@ def ebay_parse_sold(brand):
     headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
     failed = False
 
-    # Retries for handling network errors
+    # Retries 5 times for handling network errors
     for _ in range(5):
-      print ("Retrieving %s\n\n"%(url)) 
-      response = requests.get(url, headers=headers, verify=True)
+      print ("Retrieving %s"%(url)) 
+      try: 
+        response = requests.get(url, headers=headers, verify=True, timeout=2)
+      except: # max retries or timeout exception because website is slow
+        print("MAX RETRIES OR TIMEOUT EXCEPTION BECAUSE WEBSITE IS SLOW")
+        return scraped_products
       parser = html.fromstring(response.text)
-      print("Done retrieving")
 
       if response.status_code!=200:
         print("eBay URL request failed to respond, retrying...")
@@ -250,10 +256,13 @@ def poshmark_parse_available(brand):
 
     # Retries 5 times for handling network errors
     for _ in range(5):
-      print ("Retrieving %s\n\n"%(url)) 
-      response = requests.get(url, headers=headers, verify=True)
+      print ("Retrieving %s"%(url)) 
+      try: 
+        response = requests.get(url, headers=headers, verify=True, timeout=2)
+      except: # max retries or timeout exception because website is slow
+        print("MAX RETRIES OR TIMEOUT EXCEPTION BECAUSE WEBSITE IS SLOW")
+        return scraped_products
       parser = html.fromstring(response.text)
-      print("Done retrieving")
 
       if response.status_code!=200:
           failed = True
@@ -342,10 +351,13 @@ def poshmark_parse_sold(brand):
 
     # Retries 5 times for handling network errors
     for _ in range(5):
-      print ("Retrieving %s\n\n"%(url)) 
-      response = requests.get(url, headers=headers, verify=True)
+      print ("Retrieving %s"%(url)) 
+      try: 
+        response = requests.get(url, headers=headers, verify=True, timeout=2)
+      except: # max retries or timeout exception because website is slow
+        print("MAX RETRIES OR TIMEOUT EXCEPTION BECAUSE WEBSITE IS SLOW")
+        return scraped_products
       parser = html.fromstring(response.text)
-      print("Done retrieving")
 
       if response.status_code!=200:
         failed = True
@@ -436,8 +448,12 @@ def thredup_parse_available(brand):
 
     # Retries 5 times for handling network errors
     for _ in range(5):
-      print ("Retrieving %s\n\n"%(url)) 
-      response = requests.get(url, headers=headers, verify=True)
+      print ("Retrieving %s"%(url)) 
+      try: 
+        response = requests.get(url, headers=headers, verify=True, timeout=2)
+      except: # max retries or timeout exception because website is slow
+        print("MAX RETRIES OR TIMEOUT EXCEPTION BECAUSE WEBSITE IS SLOW")
+        return scraped_products
       parser = html.fromstring(response.text)
 
       if response.status_code!=200:
@@ -545,6 +561,13 @@ def save_scraped_data(website, sdata, brand):
     print("No data scraped")
   return
 
+def process_data(brand):
+  POOL_NUM = 8
+  with Pool(POOL_NUM) as p:
+    all_processed_data = p.map( pull_brand, database )
+    print(">>>> DONE with thread processing")
+  return all_processed_data
+
 # main code entry point
 if __name__=="__main__":
   argparser = argparse.ArgumentParser()
@@ -553,10 +576,10 @@ if __name__=="__main__":
   brand = args.brand
 
   # ebay
-  #ebay_scraped_data = ebay_parse_available(brand)
-  #ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
-  #save_scraped_data('ebay', ebay_scraped_data, brand)
-  #print("DONE WITH EBAY")
+  ebay_scraped_data = ebay_parse_available(brand)
+  ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
+  save_scraped_data('ebay', ebay_scraped_data, brand)
+  print("DONE WITH EBAY")
 
   # poshmark
   #poshmark_scraped_data = poshmark_parse_available(brand)
@@ -565,8 +588,8 @@ if __name__=="__main__":
   #print("DONE WITH POSHMARK")
 
   # thredup
-  thredup_scraped_data = thredup_parse_available(brand)
-  save_scraped_data('thredup', thredup_scraped_data, brand)
-  print("DONE WITH THREDUP")
+  #thredup_scraped_data = thredup_parse_available(brand)
+  #save_scraped_data('thredup', thredup_scraped_data, brand)
+  #print("DONE WITH THREDUP")
 
   print("TOTAL VALUE OF ALL ITEMS ON EBAY, POSHMARK, THREDUP: " + str(final_global_value))
