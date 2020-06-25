@@ -3,6 +3,10 @@ import requests
 from lxml import html
 from price_parser import Price
 
+# threading
+from multiprocessing import Pool
+import multiprocessing
+
 stats = "" # available total value stats
 sold_stats = "" # sold total value stats
 scraped_products = []
@@ -561,13 +565,6 @@ def save_scraped_data(website, sdata, brand):
     print("No data scraped")
   return
 
-def process_data(brand):
-  POOL_NUM = 8
-  with Pool(POOL_NUM) as p:
-    all_processed_data = p.map( pull_brand, database )
-    print(">>>> DONE with thread processing")
-  return all_processed_data
-
 # main code entry point
 if __name__=="__main__":
   argparser = argparse.ArgumentParser()
@@ -582,14 +579,14 @@ if __name__=="__main__":
   print("DONE WITH EBAY")
 
   # poshmark
-  #poshmark_scraped_data = poshmark_parse_available(brand)
-  #poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
-  #save_scraped_data('poshmark', poshmark_scraped_data, brand)
-  #print("DONE WITH POSHMARK")
+  poshmark_scraped_data = poshmark_parse_available(brand)
+  poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
+  save_scraped_data('poshmark', poshmark_scraped_data, brand)
+  print("DONE WITH POSHMARK")
 
   # thredup
-  #thredup_scraped_data = thredup_parse_available(brand)
-  #save_scraped_data('thredup', thredup_scraped_data, brand)
-  #print("DONE WITH THREDUP")
+  thredup_scraped_data = thredup_parse_available(brand)
+  save_scraped_data('thredup', thredup_scraped_data, brand)
+  print("DONE WITH THREDUP")
 
   print("TOTAL VALUE OF ALL ITEMS ON EBAY, POSHMARK, THREDUP: " + str(final_global_value))
