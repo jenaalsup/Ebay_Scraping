@@ -3,10 +3,6 @@ import requests
 from lxml import html
 from price_parser import Price
 
-# threading
-from multiprocessing import Pool
-import multiprocessing
-
 stats = "" # available total value stats
 sold_stats = "" # sold total value stats
 scraped_products = []
