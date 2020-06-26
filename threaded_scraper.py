@@ -33,6 +33,11 @@ ebay_total_value = 0
 ebay_result_count = 0
 ebay_available_value = 0
 
+ebay_sold_value = 0
+ebay_sold_max_page = 111
+ebay_sold_count = 0
+ebay_sold_result_count = 0
+
 def ebay_parse_available(page_list):
   global sizes
   global ebay_max_page
@@ -220,16 +225,17 @@ def ebay_process_available_data(name_brand):
   ebay_available_stats(name_brand)
   return 
 
-
 def ebay_parse_sold(brand):
-  global sold_stats
-  global sold_value
   global sizes
+  global ebay_sold_max_page
+  global ebay_sold_count
+  global ebay_sold_result_count
+  total_value = 0
 
   page_num = 1
   scraped_products = []
   total_value = 0
-  total_count = 0
+ # total_count = 0
 
   while True:
     url = 'https://www.ebay.com/sch/i.html?_nkw="{0}"&_sacat=0&_dmd=1&_sop=10&LH_Complete=1&_ipg=200&_pgn={1}'.format(brand, page_num) # sorts by newly listed
@@ -317,21 +323,81 @@ def ebay_parse_sold(brand):
       }
       scraped_products.append(data)
 
-    if scraped_products:
-      total_count = total_count + count
+    #print("    >>>> COUNT: ", count)
+    max_page = -1
+    if product_listings != None:
       if count < 200:
-        value = (total_value / total_count) * int(result_count)
-        sold_stats = "  SOLD STATS for Brand: %s   Total Sold Items: %d   Value: $%0.2f "%( brand, 
-        total_count, value)   
-        print(sold_stats)
-        sold_value = value
-        print("-------> DONE WITH SOLD!")
-        break
-      page_num = page_num + 1
+        print("  EBAY SOLD: REACHED LAST PAGE AT: ", page_num)
+        max_page = page_num
     else:
-      print("No sold product listings on eBay")
-      break
-  return scraped_products
+      if (page_num == 0):
+        print("  EBAY: No sold product listings on eBay")
+      else:
+        print("  EBAY SOLD: REACHED LAST PAGE AT: ", page_num)
+        max_page = page_num
+    #print("     >>>>>>>  totals: ", count, total_value )
+    list = {'page': page_num, 'max_page': max_page, 'count': count, 'value': total_value, 'result_count': result_count, 'products' : scraped_products}
+    return list
+
+def ebay_sold_stats(brand):
+  global ebay_sold_value
+  global ebay_sold_count
+  global ebay_sold_result_count
+  global ebay_total_value
+
+  if ebay_count == 0:
+    print("  EBAY RESULTS ARE 0")
+    return
+  value = (ebay_total_value / ebay_count) * int(ebay_result_count)
+  stats = "  SOLD STATS for Brand: %s   Items Scanned: %d   Total Items (Including sponsored): %d   Value (Without sponsored): $%0.2f "%(brand, 
+          ebay_sold_count, int(ebay_sold_result_count), value) 
+  ebay_sold_value = value  
+  print(stats)
+
+def ebay_process_sold_data(name_brand):
+  global ebay_sold_count
+  global ebay_total_value
+  global ebay_result_count
+  global ebay_sold_max_page
+
+  print("name brand ", name_brand)
+  ebay_pagenum_list = []
+  for i in range(200):
+    ebay_pagenum_list.append( [i+1, name_brand] )
+  POOL_NUM = 8
+  #print(">>> ", ebay_pagenum_list )
+  with Pool(POOL_NUM) as p:
+    data = p.map( ebay_parse_sold, ebay_pagenum_list )
+    print( ">>> ", len(data) )
+    for l in data:
+      if l == None:
+        continue
+      #print( "    >>", l )
+      page = l['page']
+      temp = l["max_page"]
+      if temp >= 0:
+          if ebay_sold_max_page == -1:
+            ebay_sold_max_page = temp
+          if temp < ebay_sold_max_page:
+            ebay_sold_max_page = temp
+      products = l['products']
+      count = l['count']
+      ebay_count = ebay_count + count
+      ebay_result_count = l['result_count']
+      ebay_total_value = ebay_total_value + l['value']
+      # Now copy each entry to master list
+      start = (page - 1) * ebay_page_size
+      j = 0
+      # note that products may not appear in the order they do on the ebay web site search
+      for i in range(start, start + count):
+        products[j]['page'] = page
+        ebay_scraped_products.append(products[j])
+        j = j + 1
+      #print( ebay_scraped_products)
+    print(">>>> DONE with ebay thread processing")
+  ebay_sold_stats(name_brand)
+  return 
+
 
 def save_scraped_data(website, sdata, brand):
   global final_global_value
@@ -392,7 +458,7 @@ if __name__=="__main__":
   # ebay
   #ebay_scraped_data = ebay_parse_available(brand)
   ebay_process_available_data(name_brand)
-  ebay_scraped_products = ebay_scraped_products + ebay_parse_sold(brand)
+  ebay_process_sold_data(name_brand)
   save_scraped_data('ebay', ebay_scraped_products, name_brand)
   print("DONE WITH EBAY")
 
