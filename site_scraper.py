@@ -3,6 +3,7 @@ import requests
 from lxml import html
 from price_parser import Price
 
+
 stats = "" # available total value stats
 sold_stats = "" # sold total value stats
 scraped_products = []
@@ -533,7 +534,7 @@ def save_scraped_data(website, sdata, brand):
     else:
       file_name = str(brand) + ".csv"
 
-    f = open(file_name,"w+")
+    f = open(file_name,"w+", encoding='utf-8')
     f.write("\"title\", price, sold, size, url\r\n")
 
     size_display = "  Number of xsmall, small, medium, large, xlarge, unknown: " + str(sizes).strip('[]')
@@ -550,12 +551,12 @@ def save_scraped_data(website, sdata, brand):
     f.write( "\r\n" )
 
     for data in sdata:
-      f.write("\"" + data['title'] + "\", ")
+      f.write("\"" + data['title'] + "\", ")  
       new_price = data['price'].replace(',', "")
       f.write(new_price + ", ")
       f.write(data['sold'] + ", ")
       f.write(data['size'] + ", ")
-      f.write(data['url'] + "\r\n")
+      f.write(data['url'] + "\n")
     f.close() 
   else:
     print("No data scraped")
