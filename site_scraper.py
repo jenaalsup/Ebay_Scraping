@@ -83,7 +83,7 @@ def ebay_parse_available(brand):
       title = title.replace(product_type, '').strip()
 
       # check for sizes in product title
-      if title.lower().find('xsmall') >= 0:
+      if title.lower().find('xsmall') >= 0 || title.lower().find('xs') >= 0 || title.lower().find('x-small') >= 0:
         size = 'Xsmall'
         sizes[0] = sizes[0] + 1
       elif title.lower().find('small') >= 0:
@@ -95,7 +95,7 @@ def ebay_parse_available(brand):
       elif title.lower().find('large') >= 0:
         size = 'Large'
         sizes[3] = sizes[3] + 1
-      elif title.lower().find('xlarge') >= 0:
+      elif title.lower().find('xlarge') >= 0 || title.lower().find('xl') >= 0 || title.lower().find('x-large') >= 0:
         size = 'XLarge'
         sizes[4] = sizes[4] + 1
       else:  
