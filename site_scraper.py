@@ -3,20 +3,28 @@ import requests
 from lxml import html
 from price_parser import Price
 
+ebay_available_stats = ""
+ebay_sold_stats = ""
+poshmark_available_stats = ""
+poshmark_sold_stats = ""
+thredup_available_stats = ""
 
-stats = "" # available total value stats
-sold_stats = "" # sold total value stats
+ebay_available_value = 0
+ebay_sold_value = 0
+poshmark_available_value = 0
+poshmark_sold_value = 0
+thredup_available_value = 0
+
 scraped_products = []
-available_value = 0
-sold_value = 0
+
 final_global_value = 0
 
 # xsmall, small, medium, large, xlarge, unknown
-sizes = [0, 0, 0, 0, 0, 0]
+sizes = [0, 0, 0, 0, 0, 0] # same array for all websites
 
 def ebay_parse_available(brand):
-  global stats
-  global available_value
+  global ebay_available_stats
+  global ebay_available_value
   global sizes
 
   page_num = 1
@@ -83,7 +91,7 @@ def ebay_parse_available(brand):
       title = title.replace(product_type, '').strip()
 
       # check for sizes in product title
-      if title.lower().find('xsmall') >= 0 || title.lower().find('xs') >= 0 || title.lower().find('x-small') >= 0:
+      if title.lower().find('xsmall') >= 0 or title.lower().find('xs') >= 0 or title.lower().find('x-small') >= 0 or title.lower().find('extra small') >= 0 or title.lower().find('extrasmall') >= 0:
         size = 'Xsmall'
         sizes[0] = sizes[0] + 1
       elif title.lower().find('small') >= 0:
@@ -95,7 +103,7 @@ def ebay_parse_available(brand):
       elif title.lower().find('large') >= 0:
         size = 'Large'
         sizes[3] = sizes[3] + 1
-      elif title.lower().find('xlarge') >= 0 || title.lower().find('xl') >= 0 || title.lower().find('x-large') >= 0:
+      elif title.lower().find('xlarge') >= 0 or title.lower().find('xl') >= 0 or title.lower().find('x-large') >= 0 or title.lower().find('extra large') >= 0 or title.lower().find('extralarge') >= 0:
         size = 'XLarge'
         sizes[4] = sizes[4] + 1
       else:  
@@ -107,17 +115,18 @@ def ebay_parse_available(brand):
                   'title':title,
                   'price':price, 
                   'sold':"Available",
-                  'size':size
+                  'size':size,
+                  'source': 'eBay'
       }
       scraped_products.append(data)
     if scraped_products:
       total_count = total_count + count
       if count < 200:
         value = (total_value / total_count) * int(result_count)
-        stats = "  AVAILABLE STATS for Brand: %s   Items Scanned: %d   Total Items (Including sponsored): %d   Value (Without sponsored): $%0.2f "%( brand, 
+        ebay_available_stats = "  EBAY AVAILABLE STATS for Brand: %s   Items Scanned: %d   Total Items (Including sponsored): %d   Value (Without sponsored): $%0.2f "%( brand, 
         total_count, int(result_count), value) 
-        available_value = value  
-        print(stats)
+        ebay_available_value = value  
+        print(ebay_available_stats)
         print("-------> DONE WITH AVAILABLE!")
         break
       page_num = page_num + 1
@@ -127,8 +136,8 @@ def ebay_parse_available(brand):
   return scraped_products
 
 def ebay_parse_sold(brand):
-  global sold_stats
-  global sold_value
+  global ebay_sold_stats
+  global ebay_sold_value
   global sizes
 
   page_num = 1
@@ -194,7 +203,7 @@ def ebay_parse_sold(brand):
       sold_date = raw_sold_date[0].split()[0]
 
       # check for sizes in product title
-      if title.lower().find('xsmall') >= 0:
+      if title.lower().find('xsmall') >= 0 or title.lower().find('xs') >= 0 or title.lower().find('x-small') >= 0 or title.lower().find('extra small') >= 0 or title.lower().find('extrasmall') >= 0:
         size = 'Xsmall'
         sizes[0] = sizes[0] + 1
       elif title.lower().find('small') >= 0:
@@ -206,7 +215,7 @@ def ebay_parse_sold(brand):
       elif title.lower().find('large') >= 0:
         size = 'Large'
         sizes[3] = sizes[3] + 1
-      elif title.lower().find('xlarge') >= 0:
+      elif title.lower().find('xlarge') >= 0 or title.lower().find('xl') >= 0 or title.lower().find('x-large') >= 0 or title.lower().find('extra large') >= 0 or title.lower().find('extralarge') >= 0:
         size = 'XLarge'
         sizes[4] = sizes[4] + 1
       else:  
@@ -218,7 +227,8 @@ def ebay_parse_sold(brand):
                   'title':title,
                   'price':price, 
                   'sold':"Sold: "+sold_date,
-                  'size':size
+                  'size':size,
+                  'source': 'eBay'
       }
       scraped_products.append(data)
 
@@ -226,10 +236,10 @@ def ebay_parse_sold(brand):
       total_count = total_count + count
       if count < 200:
         value = (total_value / total_count) * int(result_count)
-        sold_stats = "  SOLD STATS for Brand: %s   Total Sold Items: %d   Value: $%0.2f "%( brand, 
+        ebay_sold_stats = "  EBAY SOLD STATS for Brand: %s   Total Sold Items: %d   Value: $%0.2f "%( brand, 
         total_count, value)   
-        print(sold_stats)
-        sold_value = value
+        print(ebay_sold_stats)
+        ebay_sold_value = value
         print("-------> DONE WITH SOLD!")
         break
       page_num = page_num + 1
@@ -239,8 +249,8 @@ def ebay_parse_sold(brand):
   return scraped_products
 
 def poshmark_parse_available(brand):
-  global stats 
-  global available_value 
+  global poshmark_available_stats 
+  global poshmark_available_value 
   global sizes
 
   page_num = 1 
@@ -314,17 +324,18 @@ def poshmark_parse_available(brand):
                   'title':title,
                   'price':price, 
                   'sold':"Available",
-                  'size':size
+                  'size':size,
+                  'source': 'Poshmark'
       }
       scraped_products.append(data)
 
     if scraped_products:
       total_count = total_count + count
       if count < 48: # 48 items per page on Poshmark
-        stats = "  AVAILABLE STATS for Brand: %s   Items Scanned: %d   Total Value: $%0.2f "%( brand, 
+        poshmark_available_stats = "  POSHMARK AVAILABLE STATS for Brand: %s   Items Scanned: %d   Total Value: $%0.2f "%( brand, 
         total_count, total_value)
-        available_value = total_value  
-        print(stats)
+        poshmark_available_value = total_value  
+        print(poshmark_available_stats)
         print("-------> DONE WITH AVAILABLE!")
         break
       page_num = page_num + 1
@@ -334,8 +345,8 @@ def poshmark_parse_available(brand):
   return scraped_products
 
 def poshmark_parse_sold(brand):
-  global sold_stats 
-  global sold_value
+  global poshmark_sold_stats 
+  global poshmark_sold_value
   global sizes
 
   page_num = 1 
@@ -410,17 +421,18 @@ def poshmark_parse_sold(brand):
                   'title':title,
                   'price':price, 
                   'sold':"Sold",
-                  'size':size
+                  'size':size,
+                  'source': 'Poshmark'
       }
       scraped_products.append(data)
 
     if scraped_products:
       total_count = total_count + count
       if count < 48: # 48 items per page on Poshmark
-        sold_stats = "  SOLD STATS for Brand: %s   Items Scanned: %d   Total Value: $%0.2f "%( brand, 
+        poshmark_sold_stats = "  POSHMARK SOLD STATS for Brand: %s   Items Scanned: %d   Total Value: $%0.2f "%( brand, 
         total_count, total_value)
-        sold_value = total_value  
-        print(sold_stats)
+        poshmark_sold_value = total_value  
+        print(poshmark_sold_stats)
         print("-------> DONE WITH SOLD!")
         break
       page_num = page_num + 1
@@ -430,8 +442,8 @@ def poshmark_parse_sold(brand):
   return scraped_products
 
 def thredup_parse_available(brand):
-  global stats 
-  global available_value 
+  global thredup_available_stats 
+  global thredup_available_value 
   global sizes
 
   scraped_products = []
@@ -503,17 +515,18 @@ def thredup_parse_available(brand):
                   'title':title,
                   'price':price, 
                   'sold':"Available",
-                  'size':title
+                  'size':title,
+                  'source': 'thredUP'
       }
       scraped_products.append(data)
 
     if scraped_products:
         total_count = total_count + count
         if count < 50: # 50 items per page on thredUP
-            stats = "  AVAILABLE STATS for Brand: %s   Items Scanned: %d   Value (Without sponsored): $%0.2f "%( brand, 
+            thredup_available_stats = "  THREDUP AVAILABLE STATS for Brand: %s   Items Scanned: %d   Value (Without sponsored): $%0.2f "%( brand, 
             total_count, total_value)
-            available_value = total_value  
-            print(stats)
+            thredup_available_value = total_value  
+            print(thredup_available_stats)
             print("-------> DONE WITH AVAILABLE!")
             break
         page_num = page_num + 1
@@ -522,28 +535,27 @@ def thredup_parse_available(brand):
         break
   return scraped_products
 
-def save_scraped_data(website, sdata, brand):
+def save_scraped_data(sdata, brand):
   global final_global_value
   if sdata:
-    if website == 'ebay':
-      file_name = "eBay_" + str(brand) + ".csv"
-    elif website == 'poshmark':
-      file_name = "Poshmark_" + str(brand) + ".csv"
-    elif website == 'thredup':
-      file_name = "thredUP_" + str(brand) + ".csv"
-    else:
-      file_name = str(brand) + ".csv"
+    file_name = str(brand) + ".csv"
 
     f = open(file_name,"w+", encoding='utf-8')
-    f.write("\"title\", price, sold, size, url\r\n")
+    f.write("\"title\", source, price, sold, size, url\r\n")
 
-    size_display = "  Number of xsmall, small, medium, large, xlarge, unknown: " + str(sizes).strip('[]')
-    total_value_stats = "  TOTAL VALUE OF AVAILABLE AND SOLD ITEMS: $" + str(available_value + sold_value)
-    final_global_value = final_global_value + available_value + sold_value
+    size_display = "  Number of xsmall  small  medium  large  xlarge  unknown: " + str(sizes).strip('[]').replace(",", " ")
+    final_global_value = ebay_available_value + ebay_sold_value + poshmark_available_value + poshmark_sold_value + thredup_available_value
+    total_value_stats = "  TOTAL VALUE OF AVAILABLE AND SOLD ITEMS ON ALL SITES: $" + str(final_global_value)
     print(total_value_stats)
-    f.write(stats) 
+    f.write(ebay_available_stats) 
     f.write("\r\n")
-    f.write(sold_stats)
+    f.write(ebay_sold_stats)
+    f.write("\r\n")
+    f.write(poshmark_available_stats) 
+    f.write("\r\n")
+    f.write(poshmark_sold_stats)
+    f.write("\r\n")
+    f.write(thredup_available_stats)
     f.write("\r\n")
     f.write(size_display)
     f.write( "\r\n" )
@@ -551,7 +563,8 @@ def save_scraped_data(website, sdata, brand):
     f.write( "\r\n" )
 
     for data in sdata:
-      f.write("\"" + data['title'] + "\", ")  
+      f.write("\"" + data['title'].replace(",", " ") + "\", ") 
+      f.write(data['source'] + ", ")
       new_price = data['price'].replace(',', "")
       f.write(new_price + ", ")
       f.write(data['sold'] + ", ")
@@ -569,21 +582,13 @@ if __name__=="__main__":
   args = argparser.parse_args()
   brand = args.brand
 
-  # ebay
-  ebay_scraped_data = ebay_parse_available(brand)
-  ebay_scraped_data = ebay_scraped_data + ebay_parse_sold(brand)
-  save_scraped_data('ebay', ebay_scraped_data, brand)
+  scraped_data = ebay_parse_available(brand)
+  scraped_data = scraped_data + ebay_parse_sold(brand)
   print("DONE WITH EBAY")
-
-  # poshmark
-  poshmark_scraped_data = poshmark_parse_available(brand)
-  poshmark_scraped_data = poshmark_scraped_data + poshmark_parse_sold(brand)
-  save_scraped_data('poshmark', poshmark_scraped_data, brand)
+  scraped_data = scraped_data + poshmark_parse_available(brand)
+  scraped_data = scraped_data + poshmark_parse_sold(brand)
   print("DONE WITH POSHMARK")
-
-  # thredup
-  thredup_scraped_data = thredup_parse_available(brand)
-  save_scraped_data('thredup', thredup_scraped_data, brand)
+  scraped_data = scraped_data + thredup_parse_available(brand)
   print("DONE WITH THREDUP")
-
+  save_scraped_data(scraped_data, brand)
   print("TOTAL VALUE OF ALL ITEMS ON EBAY, POSHMARK, THREDUP: " + str(final_global_value))
