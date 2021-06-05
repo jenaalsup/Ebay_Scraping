@@ -34,14 +34,16 @@ def ebay_parse_available(brand):
 
   while True:
     url = 'https://www.ebay.com/sch/i.html?_nkw="{0}"&_sacat=0&_dmd=1&_sop=10&_ipg=200&_pgn={1}'.format(brand, page_num) # sorts by newly listed
-    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
+    #headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
     failed = False
+    headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0.1; SM-J700M Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36'}
 
     # Retries 5 times for handling network errors
     for _ in range(5):
       print ("Retrieving %s"%(url)) 
+      print(headers)
       try: 
-        response = requests.get(url, headers=headers, verify=True, timeout=2)
+        response = requests.get(url, headers=headers, verify=True, timeout=5)
       except: # max retries or timeout exception because website is slow
         print("MAX RETRIES OR TIMEOUT EXCEPTION BECAUSE WEBSITE IS SLOW")
         return scraped_products
@@ -61,6 +63,7 @@ def ebay_parse_available(brand):
         return []
 
     product_listings = parser.xpath('//li[contains(@class, "s-item    ")]')
+    print(product_listings)
     raw_result_count = parser.xpath("//h1[contains(@class,'count-heading')]//text()")
 
     if raw_result_count == None: 
@@ -74,11 +77,13 @@ def ebay_parse_available(brand):
     count = 0
     for product in product_listings:
       raw_url = product.xpath('.//a[contains(@class,"item__link")]/@href')
+      print("URLLLLLL", raw_url)
       raw_title = product.xpath('.//h3[contains(@class,"item__title")]//text()')
       raw_product_type = product.xpath('.//h3[contains(@class,"item__title")]/span[@class="LIGHT_HIGHLIGHT"]/text()')
       raw_price = product.xpath('.//span[contains(@class,"s-item__price")]//text()')
       raw_title[0].encode('ascii', 'ignore')
-      sponsored = product.xpath('.//span[contains(@role,"text")]//text()')
+      sponsored = product.xpath('.//h3[contains(@class,"item__title--tagblock")]//text()')
+      #sponsored = product.xpath('.//span[contains(@role,"text")]//text()')
       if (len(sponsored) > 0): # don't count sponsored products
           continue
 
@@ -122,6 +127,10 @@ def ebay_parse_available(brand):
     if scraped_products:
       total_count = total_count + count
       if count < 200:
+        print("RESULT COUNT", result_count)
+        new_result = result_count[0: result_count.find(" ")]
+        if len(new_result) != 0:
+          result_count = new_result
         value = (total_value / total_count) * int(result_count)
         ebay_available_stats = "  EBAY AVAILABLE STATS for Brand: %s   Items Scanned: %d   Total Items (Including sponsored): %d   Value (Without sponsored): $%0.2f "%( brand, 
         total_count, int(result_count), value) 
@@ -358,7 +367,9 @@ def poshmark_parse_sold(brand):
 
   while True:
     url = 'https://poshmark.com/search?query={0}&availability=sold_out&sort_by=added_desc&max_id={1}'.format(url_brand, page_num) # sorts by just in
-    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
+    #headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
+    #headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'}
+
     failed = False
 
     # Retries 5 times for handling network errors
@@ -585,10 +596,10 @@ if __name__=="__main__":
   scraped_data = ebay_parse_available(brand)
   scraped_data = scraped_data + ebay_parse_sold(brand)
   print("DONE WITH EBAY")
-  scraped_data = scraped_data + poshmark_parse_available(brand)
-  scraped_data = scraped_data + poshmark_parse_sold(brand)
-  print("DONE WITH POSHMARK")
-  scraped_data = scraped_data + thredup_parse_available(brand)
-  print("DONE WITH THREDUP")
+  #scraped_data = scraped_data + poshmark_parse_available(brand)
+  #scraped_data = scraped_data + poshmark_parse_sold(brand)
+  #print("DONE WITH POSHMARK")
+  #scraped_data = scraped_data + thredup_parse_available(brand)
+  #print("DONE WITH THREDUP")
   save_scraped_data(scraped_data, brand)
   print("TOTAL VALUE OF ALL ITEMS ON EBAY, POSHMARK, THREDUP: " + str(final_global_value))
